@@ -38,7 +38,7 @@ The application scans a target subnet, tracks open ports and services, detects b
 ![Anomaly Alerts](assets/anomaly_count_over_time.png)
 
 ### Trend Analysis
-![Trend Analysis](assets/anomaly_alerts_trends_analysis.png)
+![Trend Analysis](assets/anomaly_alerts_trend_analysis.png)
 
 ---
 
