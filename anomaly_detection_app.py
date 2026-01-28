@@ -11,15 +11,12 @@ import streamlit as st
 # Importing sklearn utilities for modelling
 from sklearn.ensemble import IsolationForest
 
-
 # Defining Streamlit page settings
 
 st.set_page_config(
     page_title="Real-Time Network Anomaly Detection",
     layout="wide"
 )
-
-
 
 # Defining configuration settings
 
@@ -29,8 +26,6 @@ DEFAULT_SCAN_INTERVAL = 60
 HISTORY_FILE = "scan_history.csv"      # Storing scan history
 STATE_FILE = "previous_state.json"     # Storing last scan state
 
-
-
 # Defining scan and parsing helpers
 
 def running_nmap_scan(target: str) -> dict:
@@ -39,7 +34,7 @@ def running_nmap_scan(target: str) -> dict:
     """
 
     # Creating command for scanning ports and services
-    command = f"nmap -sT -sV --open -T4 {target}"
+    command = f"nmap -sT -sV -T4 {target}"
 
     # Executing scan and capturing output
     output = os.popen(command).read()
@@ -258,14 +253,22 @@ def running_single_scan(target_subnet: str) -> tuple[pd.DataFrame, pd.DataFrame,
 
     # keeping host by enforcing required columns before merging
     if features_df.empty:
-    	features_df = pd.DataFrame(columns=["host", "open_ports_count", "unique_services_count"])
+        features_df = pd.DataFrame(
+            columns=["host", "open_ports_count", "unique_services_count"]
+        )
 
     if changes_df.empty:
-    changes_df = pd.DataFrame(columns=[
-        "host", "new_ports_count", "closed_ports_count",
-        "added_ports", "removed_ports",
-        "host_newly_seen", "host_disappeared"
-    ])
+        changes_df = pd.DataFrame(
+            columns=[
+                "host",
+                "new_ports_count",
+                "closed_ports_count",
+                "added_ports",
+                "removed_ports",
+                "host_newly_seen",
+                "host_disappeared"
+            ]
+        )
 
     # Merging features and change metrics
     merged = pd.merge(features_df, changes_df, on="host", how="outer").fillna(0)
@@ -334,9 +337,14 @@ if run_scan_button:
 
 # Triggering auto refresh
 if auto_refresh:
-    st.session_state["run_scan"] = True
-    time.sleep(scan_interval)
-    st.rerun()
+    if "last_run_time" not in st.session_state:
+        st.session_state["last_run_time"] = 0
+
+    current_time = time.time()
+
+    if current_time - st.session_state["last_run_time"] >= scan_interval:
+        st.session_state["last_run_time"] = current_time
+        st.session_state["run_scan"] = True
 
 # Performing scan if requested
 if st.session_state.get("run_scan", False):
